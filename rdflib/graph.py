@@ -4,6 +4,8 @@ from rdflib.namespace import Namespace  # required for doctests
 assert Namespace # avoid warning
 from rdflib.py3compat import format_doctest_out
 
+from collections import OrderedDict 
+
 __doc__ = format_doctest_out("""\
 
 RDFLib defines the following kinds of Graphs:
@@ -302,6 +304,7 @@ class Graph(Node):
 
     def __init__(self, store='default', identifier=None,
                  namespace_manager=None):
+        print("start2")
         super(Graph, self).__init__()
         self.__identifier = identifier or BNode()
 
@@ -313,6 +316,7 @@ class Graph(Node):
             self.__store = store = plugin.get(store, Store)()
         else:
             self.__store = store
+        print(self.__store.__class__)
         self.__namespace_manager = namespace_manager
         self.context_aware = False
         self.formula_aware = False
@@ -845,7 +849,7 @@ class Graph(Node):
 
         """
         if seen is None:
-            seen = {}
+            seen = OrderedDict() #{}
         elif arg in seen:
             return
         seen[arg] = 1
@@ -861,7 +865,7 @@ class Graph(Node):
         ``property`` relationship starting at ``subject``.
         """
         if remember is None:
-            remember = {}
+            remember = OrderedDict() #{}
         if subject in remember:
             return
         remember[subject] = 1
@@ -877,7 +881,7 @@ class Graph(Node):
         ``property`` relationship starting at ``subject``.
         """
         if remember is None:
-            remember = {}
+            remember = OrderedDict() #{}
         if object in remember:
             return
         remember[object] = 1
@@ -1062,7 +1066,7 @@ class Graph(Node):
 
         """
 
-        initBindings = initBindings or {}
+        initBindings = initBindings or OrderedDict() #{}
         initNs = initNs or dict(self.namespaces())
 
         if hasattr(self.store, "query") and use_store_provided:
@@ -1088,7 +1092,7 @@ class Graph(Node):
               initNs=None, initBindings=None,
               use_store_provided=True, **kwargs):
         """Update this graph with the given update query."""
-        initBindings = initBindings or {}
+        initBindings = initBindings or OrderedDict() #{}
         initNs = initNs or dict(self.namespaces())
 
         if hasattr(self.store, "update") and use_store_provided:

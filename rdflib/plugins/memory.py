@@ -1,6 +1,7 @@
 from rdflib.term import BNode
 from rdflib.store import Store, NO_STORE, VALID_STORE
 
+from collections import OrderedDict 
 __all__ = ['Memory', 'IOMemory']
 
 ANY = Any = None
@@ -17,20 +18,21 @@ class Memory(Store):
     Authors: Michel Pelletier, Daniel Krech, Stefan Niederhauser
     """
     def __init__(self, configuration=None, identifier=None):
+        print("initializing graph")
         super(Memory, self).__init__(configuration)
         self.identifier = identifier
 
         # indexed by [subject][predicate][object]
-        self.__spo = {}
+        self.__spo = OrderedDict() #{}
 
         # indexed by [predicate][object][subject]
-        self.__pos = {}
+        self.__pos = OrderedDict() #{}
 
         # indexed by [predicate][object][subject]
-        self.__osp = {}
+        self.__osp = OrderedDict() #{}
 
-        self.__namespace = {}
-        self.__prefix = {}
+        self.__namespace = OrderedDict() #{}
+        self.__prefix = OrderedDict() #{}
 
     def add(self, (subject, predicate, object), context, quoted=False):
         """\
@@ -43,33 +45,33 @@ class Memory(Store):
         try:
             po = spo[subject]
         except:
-            po = spo[subject] = {}
+            po = spo[subject] = OrderedDict() #{}
         try:
             o = po[predicate]
         except:
-            o = po[predicate] = {}
+            o = po[predicate] = OrderedDict() #{}
         o[object] = 1
 
         pos = self.__pos
         try:
             os = pos[predicate]
         except:
-            os = pos[predicate] = {}
+            os = pos[predicate] = OrderedDict() #{}
         try:
             s = os[object]
         except:
-            s = os[object] = {}
+            s = os[object] = OrderedDict() #{}
         s[subject] = 1
 
         osp = self.__osp
         try:
             sp = osp[object]
         except:
-            sp = osp[object] = {}
+            sp = osp[object] = OrderedDict() #{}
         try:
             p = sp[subject]
         except:
-            p = sp[subject] = {}
+            p = sp[subject] = OrderedDict() #{}
         p[predicate] = 1
 
     def remove(self, (subject, predicate, object), context=None):
@@ -165,6 +167,22 @@ class Memory(Store):
         return (c for c in [])  # TODO: best way to return empty generator
 
 
+class OrderedSet(OrderedDict):
+    def add(self, key):
+        self[key]=1
+    
+    def get(self):
+        x = list(self.items())
+        s = set()
+        for item in x:
+            s.add(item)
+        return s
+
+    def intersection(self, other):
+        self_set = self.get()
+        other_set = other.get()
+        return self_set.intersection(other_set)
+
 class IOMemory(Store):
     """\
     An integer-key-optimized context-aware in-memory store.
@@ -205,25 +223,30 @@ class IOMemory(Store):
 
     def __init__(self, configuration=None, identifier=None):
         super(IOMemory, self).__init__()
-        self.__namespace = {}
-        self.__prefix = {}
+        self.__namespace = OrderedDict() #{}
+        self.__prefix = OrderedDict() #{}
 
         # Mappings for encoding RDF nodes using integer keys, to save memory
         # in the indexes Note that None is always mapped to itself, to make
         # it easy to test for it in either encoded or unencoded form.
-        self.__int2obj = {None: None}  # maps integer keys to objects
-        self.__obj2int = {None: None}  # maps objects to integer keys
+        #self.__int2obj = {None: None}  # maps integer keys to objects
+        self.__int2obj = OrderedDict()
+        self.__int2obj[None] = None
+        #self.__obj2int = {None: None}  # maps objects to integer keys
+        self.__obj2int = OrderedDict()
+        self.__obj2int[None] = None
 
         # Indexes for each triple part, and a list of contexts for each triple
-        self.__subjectIndex = {}    # key: sid    val: set(enctriples)
-        self.__predicateIndex = {}  # key: pid    val: set(enctriples)
-        self.__objectIndex = {}     # key: oid    val: set(enctriples)
-        self.__tripleContexts = {
-        }  # key: enctriple    val: {cid1: quoted, cid2: quoted ...}
-        self.__contextTriples = {None: set()}  # key: cid    val: set(enctriples)
+        self.__subjectIndex = OrderedDict() #{}    # key: sid    val: set(enctriples)
+        self.__predicateIndex = OrderedDict() #{}  # key: pid    val: set(enctriples)
+        self.__objectIndex = OrderedDict() #{}     # key: oid    val: set(enctriples)
+        self.__tripleContexts = OrderedDict() #{}  # key: enctriple    val: {cid1: quoted, cid2: quoted ...}
+        #self.__contextTriples = {None: set()}  # key: cid    val: set(enctriples)
+        self.__contextTriples = OrderedDict()
+        self.__contextTriples[None] = OrderedSet()
 
         # all contexts used in store (unencoded)
-        self.__all_contexts = set()
+        self.__all_contexts = OrderedSet() #set()
         # default context information for triples
         self.__defaultContexts = None
 
@@ -255,17 +278,17 @@ class IOMemory(Store):
         if sid in self.__subjectIndex:
             self.__subjectIndex[sid].add(enctriple)
         else:
-            self.__subjectIndex[sid] = set([enctriple])
+            self.__subjectIndex[sid] = OrderedSet() #set([enctriple])
 
         if pid in self.__predicateIndex:
             self.__predicateIndex[pid].add(enctriple)
         else:
-            self.__predicateIndex[pid] = set([enctriple])
+            self.__predicateIndex[pid] = OrderedSet() #set([enctriple])
 
         if oid in self.__objectIndex:
             self.__objectIndex[oid].add(enctriple)
         else:
-            self.__objectIndex[oid] = set([enctriple])
+            self.__objectIndex[oid] = OrderedSet() #set([enctriple])
 
     def remove(self, triplepat, context=None):
         req_cid = self.__obj2id(context)
@@ -416,7 +439,7 @@ class IOMemory(Store):
 
         # always add the triple to given context, making sure it's initialized
         if cid not in self.__contextTriples:
-            self.__contextTriples[cid] = set()
+            self.__contextTriples[cid] = OrderedSet() #set()
         self.__contextTriples[cid].add(enctriple)
 
         # if this is the first ever triple in the store, set default ctx info

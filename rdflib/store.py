@@ -33,6 +33,8 @@ UNKNOWN = None
 
 from rdflib.events import Dispatcher, Event
 
+from collections import OrderedDict 
+
 __all__ = ['StoreCreatedEvent', 'TripleAddedEvent', 'TripleRemovedEvent',
            'NodePickler', 'Store']
 
@@ -78,8 +80,8 @@ except ImportError:
 
 class NodePickler(object):
     def __init__(self):
-        self._objects = {}
-        self._ids = {}
+        self._objects = OrderedDict() #{}
+        self._ids = OrderedDict() #{}
         self._get_object = self._objects.__getitem__
 
     def _get_ids(self, key):

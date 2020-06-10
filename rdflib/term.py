@@ -50,6 +50,8 @@ from collections import defaultdict
 
 from isodate import parse_time, parse_date, parse_datetime
 
+from collections import OrderedDict 
+
 try:
     from hashlib import md5
     assert md5
@@ -66,7 +68,7 @@ b = py3compat.b
 
 skolem_genid = "/.well-known/genid/"
 rdflib_skolem_genid = "/.well-known/genid/rdflib/"
-skolems = {}
+skolems = OrderedDict() #{}
 
 
 _invalid_uri_chars = '<>" {}|\\^`'
@@ -1516,7 +1518,7 @@ XSDToPython = {
     _RDF_HTMLLITERAL: _parseHTML
 }
 
-_toPythonMapping = {}
+_toPythonMapping = OrderedDict() #{}
 
 _toPythonMapping.update(XSDToPython)
 
