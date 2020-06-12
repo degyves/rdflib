@@ -165,14 +165,14 @@ class SortedIOMemory(IOMemory):
         else:
             enctriples = sets[0].copy()
 
-        print("context:")
-        print(context)
-        print("triplein:")
-        print(triplein)
-        for enctriple in enctriples:
-            print("  decodeTriple:")
-            print(self.__decodeTriple(enctriple))
-            print("---")
+        #print("context:")
+        #print(context)
+        #print("triplein:")
+        #print(triplein)
+        #for enctriple in enctriples:
+        #    print("  decodeTriple:")
+        #    print(self.__decodeTriple(enctriple))
+        #    print("---")
 
         return ((self.__decodeTriple(enctriple), self.__contexts(enctriple))
                 for enctriple in enctriples
